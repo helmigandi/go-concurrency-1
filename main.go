@@ -13,6 +13,7 @@ type Order struct {
 	mux    sync.Mutex
 }
 
+// Global variable
 var (
 	totalUpdates int
 	updateMutex  sync.Mutex
@@ -65,18 +66,21 @@ func processOrders(orders []*Order) {
 }
 
 func updateOrderStatus(order *Order) {
+	// Lock to access or update status variable from another Goroutine
 	order.mux.Lock()
 	time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
 	status := []string{"processing", "shipped", "delivered"}[rand.Intn(3)]
 	order.status = status
 	fmt.Printf("Updating order %d status: %s\n", order.ID, order.status)
+	// Unlock, so the next Goroutine can access or update status variable
 	order.mux.Unlock()
 
+	// Lock to access or update totalUpdates variable from another Goroutine
 	updateMutex.Lock()
+	// Unlock, so the next Goroutine can access or update totalUpdates variable
 	defer updateMutex.Unlock()
-	currentUpdates := totalUpdates
 	time.Sleep(5 * time.Millisecond)
-	totalUpdates = currentUpdates + 1
+	totalUpdates = totalUpdates + 1
 }
 
 // return pointer of orders because we want to manipulate or modify the orders
