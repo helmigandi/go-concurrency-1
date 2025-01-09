@@ -1,5 +1,12 @@
 # Go Currency
 
+## WaitGroup
+
+- Used to coordinate multiple Goroutines
+- Basically allows you to kind of wait for a collection of Goroutines to kind of finish executing before executing the next step.
+- You can really imagine WaitGroup as a somehow as a counter which increments whenever Goroutine start whenever you add
+  something to the counter and whenever you say kind of done right it decreases and it is decrements the counter.
+
 ## Mutex
 
 - Locking Mechanism that ensures that only one goroutine can access a specific section of your code.
