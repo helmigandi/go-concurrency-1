@@ -13,74 +13,43 @@ type Order struct {
 	mux    sync.Mutex
 }
 
-// Global variable
-var (
-	totalUpdates int
-	updateMutex  sync.Mutex
-)
-
 func main() {
 	// Imagine it is like Increment or counter
 	var wg sync.WaitGroup
 
-	// Initialize 3 size the Increment or counter
-	wg.Add(3)
+	// Initialize 2 size the Increment or counter
+	wg.Add(2)
 
-	orders := generateOrders(20)
+	orderChannel := make(chan *Order)
 
-	// Add increment by 1
-	//go func() {
-	//	// remove increment by -1
-	//	defer wg.Done()
-	//	processOrders(orders)
-	//}()
+	// Generating orders in a Goroutine
+	// And we want to receive these orders in another Goroutine
+	go func() {
+		defer wg.Done()
+		defer close(orderChannel)
+		for _, order := range generateOrders(20) {
+			orderChannel <- order
+		}
+		fmt.Println("Done with generating orders")
+	}()
 
-	for i := 0; i < 3; i++ {
-		// Add increment by 1
-		go func() {
-			// remove increment by -1
-			defer wg.Done()
-			for _, o := range orders {
-				updateOrderStatus(o)
-			}
-		}()
-	}
+	go processOrders(orderChannel, &wg)
 
 	// Blocks the whole execution until the counter (3) become zero again.
 	wg.Wait()
 
-	reportOrderStatus(orders)
-
 	fmt.Println("All operations completed. Exiting...")
-	fmt.Println("Total updates: ", totalUpdates)
 }
 
 // Imagine this to send HTTP Request or some request to another microservice
 // where it actually processes the orders
-func processOrders(orders []*Order) {
-	for _, order := range orders {
+func processOrders(orderChannel <-chan *Order, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for order := range orderChannel {
 		// Generate random int between 0 and 500
 		time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
 		fmt.Printf("Processing order %d\n", order.ID)
 	}
-}
-
-func updateOrderStatus(order *Order) {
-	// Lock to access or update status variable from another Goroutine
-	order.mux.Lock()
-	time.Sleep(time.Duration(rand.Intn(300)) * time.Millisecond)
-	status := []string{"processing", "shipped", "delivered"}[rand.Intn(3)]
-	order.status = status
-	fmt.Printf("Updating order %d status: %s\n", order.ID, order.status)
-	// Unlock, so the next Goroutine can access or update status variable
-	order.mux.Unlock()
-
-	// Lock to access or update totalUpdates variable from another Goroutine
-	updateMutex.Lock()
-	// Unlock, so the next Goroutine can access or update totalUpdates variable
-	defer updateMutex.Unlock()
-	time.Sleep(5 * time.Millisecond)
-	totalUpdates = totalUpdates + 1
 }
 
 // return pointer of orders because we want to manipulate or modify the orders
@@ -93,13 +62,4 @@ func generateOrders(count int) []*Order {
 		}
 	}
 	return orders
-}
-
-// Utility function to print orders
-func reportOrderStatus(orders []*Order) {
-	fmt.Println("\n---Order Status Report---")
-	for _, order := range orders {
-		fmt.Printf("Order %d: %s\n", order.ID, order.status)
-	}
-	fmt.Println("------------------------")
 }
