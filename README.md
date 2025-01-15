@@ -1,5 +1,8 @@
 # Go Currency
 
+- Source: [Youtube Videos](https://www.youtube.com/watch?v=y2jP45S9BHk)
+- Status: Progress
+
 ## WaitGroup
 
 - Used to coordinate multiple Goroutines
@@ -23,3 +26,16 @@
   this sort of data through the pipe and then the data flows through the pipe from one direction to another,
   from sender to the receiver. **It is important that multiple senders and receivers can use the channel but it is
   really important to know that Go ensures that only one operations happens at the time**.
+
+## Select
+
+- Designed for channel operations.
+- This Select Statement waits until one of the channel operations which can be sending or receiving data
+  becomes ready to execute.
+- It can wait on multiple channel operations simultaneously.
+- Select statement is a blocking mechanism.
+- If The Select Statement have a default case for our Select Statement, then it will waits
+  until one channel operation becomes ready for execution. 
+- Whenever multiple channels are ready simultaneously, then the Select Statement just select one randomly.
+- Common use cases could be timeout handling or event multiplex
+
